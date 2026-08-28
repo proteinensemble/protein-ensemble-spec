@@ -1,6 +1,6 @@
 # Protein Ensemble (PE) Manifest Specification
 
-![Schema Version](https://img.shields.io/badge/schema-v1.0.0-blue.svg)
+![Schema Version](https://img.shields.io/badge/schema-v0.1.0-blue.svg)
 
 This repository defines the core **data contract and semantic requirements** for the Protein Ensemble (PE) manifest.
 
@@ -9,7 +9,7 @@ A PCE package consists of a `manifest.yaml` file alongside the structural resour
 ## Repository Contents
 
 - `manifest.schema.json`: The normative JSON Schema (Draft-07) defining the strict structural contract of the `manifest.yaml`.
-- `pce-manifest-contract.md`: The plain-English semantic specification. It details rules that cannot be fully expressed in JSON Schema (such as cross-field validation, weight tolerances, and URI security constraints).
+- `pe-manifest-contract.md`: The plain-English semantic specification. It details rules that cannot be fully expressed in JSON Schema (such as cross-field validation, weight tolerances, and URI security constraints).
 
 ## Scope
 
@@ -21,11 +21,11 @@ It **does not** define:
 - Hashing mechanics (e.g., BLAKE3 Merkle-tree construction or trajectory-to-byte extraction).
 - Scientific semantics (e.g., calculating weights, workflow provenance, or molecular interpretations).
 
-For details on out-of-scope elements, refer to the [Semantic Specification](pce-manifest-contract.md).
+For details on out-of-scope elements, refer to the [Semantic Specification](schemas/v0/manifest.md#out-of-scope).
 
 ## 📦 Package Structure
 
-A minimal PCE package has the following form:
+A minimal PE package has the following form:
 
 ```text
 ensemble_001/
