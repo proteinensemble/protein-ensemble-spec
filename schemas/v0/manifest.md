@@ -1,12 +1,12 @@
-# PCE Manifest — Data Contract Reference (v0.1.0)
+# Protein Ensemble (PE) Manifest — Data Contract Reference (v0.1.0)
 
-Plain-English companion to `manifest.schema.json`. This document defines the **PCE manifest data contract and semantic requirements**. It intentionally does not define implementation details such as parsing, validation code, or content-hash algorithms.
+Plain-English companion to `manifest.schema.json`. This document defines the **Protein Ensemble manifest data contract and semantic requirements**. It intentionally does not define implementation details such as parsing, validation code, or content-hash algorithms.
 
-A PCE package consists of one `manifest.yaml` plus the resources it references, organized within a directory tree.
+A PE package consists of one `manifest.yaml` plus the resources it references, organized within a directory tree.
 
 ## Serialization and Conformance
 
-PCE manifests are serialized as **YAML 1.2**.
+PE manifests are serialized as **YAML 1.2**.
 
 The normative structural contract is defined by:
 
@@ -16,7 +16,7 @@ manifest.schema.json
 
 The YAML representation is restricted to the data model expressible by that schema.
 
-PCE manifests:
+PE manifests:
 
 - MUST use YAML 1.2.
 - MUST conform to the corresponding `manifest.schema.json`.
@@ -31,7 +31,7 @@ JSON MAY be used as an interchange representation of the same manifest data mode
 
 ## Package Structure
 
-A minimal PCE package has the following form:
+A minimal PE package has the following form:
 
 ```text
 ensemble_001/
@@ -44,7 +44,7 @@ ensemble_001/
 
 The manifest identifies the resources required to interpret the ensemble.
 
-Relative resource URIs are resolved relative to the PCE package root. If a URI is a relative path, it MUST NOT traverse outside the PCE package root (e.g., it MUST NOT contain ../ segments that resolve to a parent directory).
+Relative resource URIs are resolved relative to the PE package root. If a URI is a relative path, it MUST NOT traverse outside the PE package root (e.g., it MUST NOT contain ../ segments that resolve to a parent directory).
 
 The exact rules governing external URI schemes and external resources are outside the scope of this document.
 
@@ -56,11 +56,11 @@ The exact rules governing external URI schemes and external resources are outsid
 | --- | --- | --- | --- |
 | `schema_version` | string (`"X.Y.Z"`) | Yes | Currently `"1.0.0"`. |
 | `id` | string | Yes | Ensemble ID. |
-| `content_hash` | string (`"algo:hexdigest"`) | Yes | Content hash of the package according to the PCE content-hash specification. |
+| `content_hash` | string (`"algo:hexdigest"`) | Yes | Content hash of the package according to the PE content-hash specification. |
 | `topology_reference` | object | Yes | Exactly one of `member_id` or `external_reference`. |
 | `weight_scheme` | object | Only if any member has a `weight` | See [Weighting](#weighting). |
 | `capabilities_required` | array of strings | No | Defaults to `["standalone_cif"]`. |
-| `members` | array | Yes (min 1) | One entry per ensemble member. See [Member](https://www.google.com/search?q=%23member). |
+| `members` | array | Yes (min 1) | One entry per ensemble member. See [Member](#member). |
 | `metadata` | object | No | Opaque passthrough. |
 | `dynamics` | object | No | Opaque passthrough. |
 
@@ -241,11 +241,11 @@ A member MUST provide `residue_mapping` when its topology differs from the manif
 
 ## Opaque Fields
 
-Fields explicitly described as **opaque passthrough** are intentionally not interpreted by the PCE core contract.
+Fields explicitly described as **opaque passthrough** are intentionally not interpreted by the PE core contract.
 
 Their contents MAY be defined by extensions or downstream applications.
 
-The PCE core contract does not assign domain-specific semantics to these fields.
+The PE core contract does not assign domain-specific semantics to these fields.
 
 Whether unknown fields are permitted outside explicitly extensible objects is determined by `manifest.schema.json`.
 
@@ -253,7 +253,7 @@ Whether unknown fields are permitted outside explicitly extensible objects is de
 
 The following requirements are semantic and may not be fully expressible through JSON Schema alone.
 
-A manifest can therefore satisfy the structural schema while still violating the PCE contract.
+A manifest can therefore satisfy the structural schema while still violating the PE contract.
 
 A conforming package MUST satisfy all of the following:
 
@@ -264,7 +264,7 @@ A conforming package MUST satisfy all of the following:
 - If `weight_scheme.normalized == true`, member weights MUST sum to `1.0` within a tolerance of `1e-6`.
 - `capabilities_required` MUST list `"trajectory_backed"` if any member uses trajectory-backed structure.
 - A member's `residue_mapping` MUST be present when its topology differs from `topology_reference`.
-- `content_hash` MUST match the content hash computed for the package according to the PCE content-hash specification.
+- `content_hash` MUST match the content hash computed for the package according to the PE content-hash specification.
 
 ## Content Integrity
 
@@ -280,17 +280,17 @@ For example:
 blake3:ab12...
 ```
 
-The value identifies a content hash computed over the package according to the applicable PCE content-hash specification.
+The value identifies a content hash computed over the package according to the applicable PE content-hash specification.
 
 A syntactically valid hash MUST NOT be treated as evidence that the package contents are correct.
 
 An implementation performing integrity verification MUST recompute the hash from the package contents and compare the result with the manifest value.
 
-The content-hash algorithm, Merkle-tree construction, canonical serialization rules, and resource-byte extraction rules are **not defined by this document**. They are defined by the separate PCE content-hash specification.
+The content-hash algorithm, Merkle-tree construction, canonical serialization rules, and resource-byte extraction rules are **not defined by this document**. They are defined by the separate PE content-hash specification.
 
 The content hash identifies the package's content rather than the particular YAML formatting used to serialize its manifest.
 
-Equivalent YAML and JSON representations of the same PCE data model MUST therefore be capable of representing the same package content without changing its content identity.
+Equivalent YAML and JSON representations of the same PE data model MUST therefore be capable of representing the same package content without changing its content identity.
 
 ## Versioning
 
@@ -306,13 +306,13 @@ The currently defined version is:
 0.1.0
 ```
 
-Changes to the manifest contract MUST be reflected in the schema version according to the PCE versioning policy.
+Changes to the manifest contract MUST be reflected in the schema version according to the PE versioning policy.
 
 The precise compatibility guarantees between different schema versions are outside the scope of this document.
 
 ## Reproducibility and Scope
 
-The PCE core manifest describes **what an ensemble contains and how its structural contents are interpreted**.
+The PE core manifest describes **what an ensemble contains and how its structural contents are interpreted**.
 
 It does not attempt to fully describe **how the ensemble was generated**.
 
@@ -323,9 +323,9 @@ Reproducibility of the package as a data artifact depends on:
 - unambiguous interpretation of those resources;
 - and verification of `content_hash`.
 
-Workflow provenance, generation parameters, software environments, random seeds, simulation workflows, and derivation histories are outside the scope of the PCE core manifest.
+Workflow provenance, generation parameters, software environments, random seeds, simulation workflows, and derivation histories are outside the scope of the PE core manifest.
 
-Such information MAY be represented by separate PCE extensions or higher-level workflow/provenance systems.
+Such information MAY be represented by separate PE extensions or higher-level workflow/provenance systems.
 
 ## Out of Scope
 

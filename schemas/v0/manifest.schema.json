@@ -1,8 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://pce-contract.org/manifest.schema.json",
-  "title": "PCE Package Manifest",
-  "description": "Data contract for Protein Conformational Ensemble packages.",
+  "title": "Protein Ensemble Package Manifest",
+  "description": "Data contract for Protein Ensemble packages.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -15,7 +14,7 @@
   "properties": {
     "schema_version": {
       "type": "string",
-      "const": "1.0.0",
+      "const": "0.1.0",
       "description": "The current manifest schema version."
     },
     "id": {
