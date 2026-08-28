@@ -1,0 +1,19 @@
+---
+name: "Lint"
+
+"on":
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+
+      - name: markdownlint-cli2-action
+        uses: DavidAnson/markdownlint-cli2-action@v23.1.0
+
+      - name: YAML Lint
+        run: yamllint .
