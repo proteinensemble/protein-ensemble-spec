@@ -1,6 +1,6 @@
-# Protein Ensemble (PE) Manifest — Data Contract Reference (v0.1.0)
+# Protein Ensemble (PE) Manifest — Data Contract Reference [v0.1.0]
 
-Plain-English companion to `manifest.schema.json`. This document defines the **Protein Ensemble manifest data contract and semantic requirements**. It intentionally does not define implementation details such as parsing, validation code, or content-hash algorithms.
+Plain-English companion to `manifest.schema.json`. This document defines the **Protein Ensemble manifest data contract and semantic requirements**.
 
 A PE package consists of one `manifest.yaml` plus the resources it references, organized within a directory tree.
 
@@ -10,9 +10,7 @@ PE manifests are serialized as **YAML 1.2**.
 
 The normative structural contract is defined by:
 
-```text
-manifest.schema.json
-```
+`manifest.schema.json`
 
 The YAML representation is restricted to the data model expressible by that schema.
 
@@ -44,9 +42,7 @@ ensemble_001/
 
 The manifest identifies the resources required to interpret the ensemble.
 
-Relative resource URIs are resolved relative to the PE package root. If a URI is a relative path, it MUST NOT traverse outside the PE package root (e.g., it MUST NOT contain ../ segments that resolve to a parent directory).
-
-The exact rules governing external URI schemes and external resources are outside the scope of this document.
+Relative resource URIs are resolved relative to the PE package root, it MUST NOT traverse outside the PE package root [e.g., it MUST NOT contain ../ segments that resolve to a parent directory].
 
 ## Manifest
 
@@ -54,67 +50,29 @@ The exact rules governing external URI schemes and external resources are outsid
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `schema_version` | string (`"X.Y.Z"`) | Yes | Currently `"1.0.0"`. |
-| `id` | string | Yes | Ensemble ID. |
-| `content_hash` | string (`"algo:hexdigest"`) | Yes | Content hash of the package according to the PE content-hash specification. |
-| `topology_reference` | object | Yes | Exactly one of `member_id` or `external_reference`. |
-| `weight_scheme` | object | Only if any member has a `weight` | See [Weighting](#weighting). |
-| `capabilities_required` | array of strings | No | Defaults to `["standalone_cif"]`. |
-| `members` | array | Yes (min 1) | One entry per ensemble member. See [Member](#member). |
-| `metadata` | object | No | Opaque passthrough. |
-| `dynamics` | object | No | Opaque passthrough. |
-
+| `schemaVersion` | string (`"0.1.0"`) | Yes | Version of the Protein Ensemble manifest specification. |
+| `id` | string | Yes | Identifier for the ensemble within its managing namespace. |
+| `contentHash` | string (`"algo:hexdigest"`) | Yes | Content identifier for the ensemble, in the form algorithm:hexdigest. |
+| `weightScheme` | object | No | Defines how member weights are interpreted. |
+| `capabilitiesRequired` | array of strings | No | Capabilities a consumer must support to interpret this manifest. |
+| `metadata` | object | No | Non-normative metadata; fields have no PE core semantic meaning unless explicitly defined by the specification. |
+| `members` | object | Yes | Mapping of member structures. |
+  
 ### Terminology
 
 A **member** is a structure-bearing unit included in the ensemble.
 
 A member MAY represent an individual conformer, a trajectory frame, a representative structure, or another structure representation permitted by this contract.
 
-The term **conformational state** MAY be used in domain-specific contexts when a member is understood to represent a conformational state, but `members` is the normative manifest field name.
-
-## `topology_reference`
-
-`topology_reference` identifies the topology against which ensemble members are interpreted.
-
-It MUST contain exactly one of the following.
-
-### `member_id`
-
-A string identifying an existing member:
-
-```yaml
-topology_reference:
-  member_id: state_001
-```
-
-`member_id` MUST match the `id` of an existing entry in `members`.
-
-### `external_reference`
-
-An external topology reference:
-
-```yaml
-topology_reference:
-  external_reference:
-    uri: "..."
-    source: "..."
-```
-
-`uri` is required.
-
-`source` is optional.
-
 ## Member
 
-Each entry in `members` represents one ensemble member.
+Each key in the `members` object represents one ensemble member ID.
 
 | Field | Type | Required | Notes |
 | --- | --- | --- | --- |
-| `id` | string | yes | Unique within the ensemble. |
-| `structure` | object | yes | Exactly one of the three structure shapes described below. |
-| `weight` | object | no | `{value: number, type?: <weight type>}`. |
-| `residue_mapping` | object | no | `{uri: string, format?: string}`. Required if this member's topology differs from `topology_reference`. |
-| `thermodynamics` | object | no | Opaque passthrough. |
+| `structure` | object | Yes | Defines the structural resource |
+| `structureHash` | string | Yes | Content identifier for the referenced structural resource, in the form algorithm:hexdigest. |
+| `weight` | object | No | Contains the member weight. |
 
 ### Member IDs
 
@@ -124,124 +82,40 @@ To ensure cross-platform compatibility and safe URI/filesystem mapping, id strin
 
 ## Structure
 
-A member's `structure` object MUST conform to exactly one of the following three shapes.
+A member's `structure` object contains the following properties:
 
-### Standalone
-
-A single structure file per member:
-
-```yaml
-structure:
-  uri: structures/state_001.cif
-```
-
-This is the common case.
-
-### Multi-model
-
-One multi-model mmCIF referencing a specific model:
-
-```yaml
-structure:
-  uri: structures/ensemble.cif
-  model_index: 0
-```
-
-`model_index` MUST be an integer greater than or equal to `0`.
-
-### Trajectory-backed
-
-A topology plus trajectory referencing a specific frame:
-
-```yaml
-structure:
-  topology_uri: topology.pdb
-  trajectory_uri: trajectory.xtc
-  frame_index: 0
-  trajectory_format: xtc
-```
-
-Required fields:
-
-| Field | Type | Required |
-| --- | --- | --- |
-| `topology_uri` | string | Yes |
-| `trajectory_uri` | string | Yes |
-| `frame_index` | integer $\ge 0$ | Yes |
-| `trajectory_format` | enum | Yes |
-
-Permitted `trajectory_format` values are strictly lowercase:
-
-```text
-xtc
-dcd
-trr
-nc
-```
-
-A manifest containing a trajectory-backed member MUST include `"trajectory_backed"` in `capabilities_required`.
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `uri` | string (uri-reference) | Yes | URI reference to the structural resource. Relative references are resolved relative to the manifest. |
+| `modelIndex` | integer (>= 0) | No | Zero-based model index within the referenced structural resource. When omitted, the referenced resource represents a single structural member. |
 
 ## Weighting
 
-`weight_scheme` is required when any member declares a `weight`.
+`weightScheme` is required when any member declares a `weight`.
 
-The `weight_scheme.type` MUST be one of:
+The `weightScheme.type` MUST be one of:
 
-| Type | Sums to 1.0? | Comparable within ensemble? | Comparable across ensembles? |
-| --- | --- | --- | --- |
-| `equilibrium_probability` | Yes | Yes | Only if the same generation method and comparable simulation length are used |
-| `cluster_fraction` | Yes | Yes | No; depends on clustering algorithm and parameters |
-| `experimental_occupancy` | Not necessarily | Qualitatively only | No |
-| `uniform` | Yes (all equal) | N/A (means no weighting information beyond uniformity) | N/A |
-| `custom` | Not necessarily | Only via `custom_semantics` | No |
+| Type | Description |
+| --- | --- |
+| `EQUILIBRIUM_PROBABILITY` | Equilibrium probability weighting. |
+| `UNIFORM` | Uniform weighting across members. |
+
+`weightScheme` also includes a `normalized` property (boolean) that dictates whether explicit member weights are normalized according to the semantic contract.
 
 ### Weighting rules
 
-- `weight_scheme` MUST be present if any member has a `weight`.
-- If `weight_scheme.type == "custom"`, `custom_semantics` MUST also be present.
-- If a member's `weight.type` is present, it MUST match `weight_scheme.type`.
-- A member's `weight.type` MUST NOT contradict the ensemble's `weight_scheme.type`.
-- If `weight_scheme.normalized == true`, all member weights MUST sum to `1.0` within a tolerance of `1e-6`.
-- For `uniform`, all members are understood to have equal weight. If explicit member weights are provided, they MUST be consistent with uniform weighting.
+- `weightScheme` MUST be present if any member has a `weight`.
+- If `weightScheme.normalized == true`, all member weights MUST sum to `1.0` within a tolerance of `1e-6`.
+- For `UNIFORM`, all members are understood to have equal weight. If explicit member weights are provided, they MUST be consistent with uniform weighting.
+- A member's `weight` object contains a single `value` (number) representing its weight; its interpretation and permitted range are defined by `weightScheme` and the semantic contract.
 
 ## Capabilities
 
-`capabilities_required` declares capabilities that a consumer must support to interpret the package.
-
-If any member uses the trajectory-backed structure shape, `capabilities_required` MUST contain:
-
-```text
-trajectory_backed
-```
-
-If omitted, `capabilities_required` defaults to:
-
-```yaml
-capabilities_required:
-  - standalone_cif
-```
-
-## Residue Mapping
-
-`residue_mapping` identifies a mapping required to interpret a member whose topology differs from `topology_reference`.
-
-Its shape is:
-
-```yaml
-residue_mapping:
-  uri: mappings/state_001.json
-  format: json
-```
-
-`uri` is required.
-
-`format` is optional.
-
-A member MUST provide `residue_mapping` when its topology differs from the manifest's `topology_reference`.
+`capabilitiesRequired` declares capabilities that a consumer must support to interpret the package. If omitted, consumers should rely on the default standalone CIF reading capabilities.
 
 ## Opaque Fields
 
-Fields explicitly described as **opaque passthrough** are intentionally not interpreted by the PE core contract.
+Fields explicitly described as **opaque passthrough** (like `metadata`) are intentionally not interpreted by the PE core contract.
 
 Their contents MAY be defined by extensions or downstream applications.
 
@@ -258,17 +132,13 @@ A manifest can therefore satisfy the structural schema while still violating the
 A conforming package MUST satisfy all of the following:
 
 - Member `id` values MUST be unique within the ensemble.
-- `topology_reference.member_id` MUST reference an existing member.
-- `weight_scheme` presence or absence MUST agree with whether any member declares a `weight`.
-- Member `weight.type` MUST NOT contradict `weight_scheme.type`.
-- If `weight_scheme.normalized == true`, member weights MUST sum to `1.0` within a tolerance of `1e-6`.
-- `capabilities_required` MUST list `"trajectory_backed"` if any member uses trajectory-backed structure.
-- A member's `residue_mapping` MUST be present when its topology differs from `topology_reference`.
-- `content_hash` MUST match the content hash computed for the package according to the PE content-hash specification.
+- `weightScheme` presence or absence MUST agree with whether any member declares a `weight`.
+- If `weightScheme.normalized == true`, member weights MUST sum to `1.0` within a tolerance of `1e-6`.
+- `contentHash` MUST match the content hash computed for the package according to the PE content-hash specification.
 
 ## Content Integrity
 
-`content_hash` has the form:
+`contentHash` has the form:
 
 ```text
 algorithm:hexdigest
@@ -294,7 +164,7 @@ Equivalent YAML and JSON representations of the same PE data model MUST therefor
 
 ## Versioning
 
-`schema_version` uses the form:
+`schemaVersion` uses the form:
 
 ```text
 X.Y.Z
@@ -321,7 +191,7 @@ Reproducibility of the package as a data artifact depends on:
 - stable identification of the package;
 - identification of its structural resources;
 - unambiguous interpretation of those resources;
-- and verification of `content_hash`.
+- and verification of `contentHash`.
 
 Workflow provenance, generation parameters, software environments, random seeds, simulation workflows, and derivation histories are outside the scope of the PE core manifest.
 
@@ -335,5 +205,3 @@ This document defines the data contract, but intentionally excludes the followin
 - **Hashing Mechanics:** BLAKE3 Merkle-tree construction, canonical serialization rules, and trajectory-to-byte extraction methods.
 - **Scientific Semantics:** The biochemical interpretation of members as conformational states, the algorithms used to calculate weights, and application-specific logic for opaque objects (`metadata`, `dynamics`, `thermodynamics`).
 - **Provenance:** Workflow lineage, generation parameters, and external catalog systems that link an ensemble to its derivation history.
-
-> **Note on Trajectory Hashing:** Because trajectory-backed hashing depends on the separate content-hash specification, trajectory-backed packages MUST NOT be assumed to have interoperable content hashes across implementations until canonical frame extraction is formally defined there.

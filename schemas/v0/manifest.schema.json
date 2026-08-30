@@ -1,213 +1,113 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Protein Ensemble Package Manifest",
-  "description": "Data contract for Protein Ensemble packages.",
   "type": "object",
   "additionalProperties": false,
   "required": [
-    "schema_version",
+    "schemaVersion",
     "id",
-    "content_hash",
-    "topology_reference",
+    "contentHash",
     "members"
   ],
   "properties": {
-    "schema_version": {
+    "schemaVersion": {
       "type": "string",
       "const": "0.1.0",
-      "description": "The current manifest schema version."
+      "description": "Version of the Protein Ensemble manifest specification."
     },
     "id": {
       "type": "string",
-      "description": "Unique ensemble ID."
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "description": "Identifier for the ensemble within its managing namespace."
     },
-    "content_hash": {
+    "contentHash": {
       "type": "string",
-      "pattern": "^[a-zA-Z0-9_-]+:[a-fA-F0-9]+$",
-      "description": "Content hash in the format algorithm:hexdigest."
+      "pattern": "^[A-Za-z0-9_-]+:[A-Fa-f0-9]+$",
+      "description": "Content identifier for the ensemble, in the form algorithm:hexdigest."
     },
-    "topology_reference": {
+    "weightScheme": {
       "type": "object",
-      "description": "Identifies the topology against which ensemble members are interpreted.",
-      "oneOf": [
-        {
-          "required": ["member_id"],
-          "properties": {
-            "member_id": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        },
-        {
-          "required": ["external_reference"],
-          "properties": {
-            "external_reference": {
-              "type": "object",
-              "required": ["uri"],
-              "properties": {
-                "uri": {
-                  "type": "string",
-                  "format": "uri-reference"
-                },
-                "source": {
-                  "type": "string"
-                }
-              },
-              "additionalProperties": false
-            }
-          },
-          "additionalProperties": false
-        }
-      ]
-    },
-    "weight_scheme": {
-      "type": "object",
-      "required": ["type"],
+      "additionalProperties": false,
+      "required": [
+        "type"
+      ],
       "properties": {
         "type": {
           "type": "string",
           "enum": [
-            "equilibrium_probability",
-            "cluster_fraction",
-            "experimental_occupancy",
-            "uniform",
-            "custom"
-          ]
+            "UNIFORM",
+            "EQUILIBRIUM_PROBABILITY"
+          ],
+          "description": "Defines how member weights are interpreted."
         },
         "normalized": {
-          "type": "boolean"
-        },
-        "custom_semantics": {}
-      },
-      "if": {
-        "properties": {
-          "type": {
-            "const": "custom"
-          }
+          "type": "boolean",
+          "description": "Whether explicit member weights are normalized according to the semantic contract."
         }
-      },
-      "then": {
-        "required": ["custom_semantics"]
       }
     },
-    "capabilities_required": {
+    "capabilitiesRequired": {
       "type": "array",
       "items": {
-        "type": "string"
+        "type": "string",
+        "minLength": 1
       },
-      "default": ["standalone_cif"]
+      "uniqueItems": true,
+      "description": "Capabilities a consumer must support to interpret this manifest."
     },
     "metadata": {
       "type": "object",
-      "description": "Opaque passthrough for metadata."
-    },
-    "dynamics": {
-      "type": "object",
-      "description": "Opaque passthrough for dynamics."
+      "description": "Non-normative metadata. Metadata fields have no PE core semantic meaning unless explicitly defined by the specification."
     },
     "members": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
+      "type": "object",
+      "additionalProperties": {
         "type": "object",
-        "required": ["id", "structure"],
+        "additionalProperties": false,
+        "required": [
+          "structure",
+          "structureHash"
+        ],
         "properties": {
-          "id": {
-            "type": "string",
-            "pattern": "^[a-zA-Z0-9_-]+$",
-            "description": "Unique member ID matching alphanumeric, hyphen, and underscore characters."
-          },
           "structure": {
             "type": "object",
-            "oneOf": [
-              {
-                "title": "Standalone",
-                "required": ["uri"],
-                "properties": {
-                  "uri": {
-                    "type": "string",
-                    "format": "uri-reference"
-                  }
-                },
-                "additionalProperties": false
-              },
-              {
-                "title": "Multi-model",
-                "required": ["uri", "model_index"],
-                "properties": {
-                  "uri": {
-                    "type": "string",
-                    "format": "uri-reference"
-                  },
-                  "model_index": {
-                    "type": "integer",
-                    "minimum": 0
-                  }
-                },
-                "additionalProperties": false
-              },
-              {
-                "title": "Trajectory-backed",
-                "required": [
-                  "topology_uri",
-                  "trajectory_uri",
-                  "frame_index",
-                  "trajectory_format"
-                ],
-                "properties": {
-                  "topology_uri": {
-                    "type": "string",
-                    "format": "uri-reference"
-                  },
-                  "trajectory_uri": {
-                    "type": "string",
-                    "format": "uri-reference"
-                  },
-                  "frame_index": {
-                    "type": "integer",
-                    "minimum": 0
-                  },
-                  "trajectory_format": {
-                    "type": "string",
-                    "enum": ["xtc", "dcd", "trr", "nc"]
-                  }
-                },
-                "additionalProperties": false
-              }
-            ]
-          },
-          "weight": {
-            "type": "object",
-            "required": ["value"],
-            "properties": {
-              "value": {
-                "type": "number"
-              },
-              "type": {
-                "type": "string"
-              }
-            }
-          },
-          "residue_mapping": {
-            "type": "object",
-            "required": ["uri"],
+            "additionalProperties": false,
+            "required": [
+              "uri"
+            ],
             "properties": {
               "uri": {
                 "type": "string",
-                "format": "uri-reference"
+                "format": "uri-reference",
+                "minLength": 1,
+                "description": "URI reference to the structural resource. Relative references are resolved relative to the manifest."
               },
-              "format": {
-                "type": "string"
+              "modelIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Zero-based model index within the referenced structural resource. When omitted, the referenced resource represents a single structural member."
               }
             }
           },
-          "thermodynamics": {
+          "structureHash": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+:[A-Fa-f0-9]+$",
+            "description": "Content identifier for the referenced structural resource, in the form algorithm:hexdigest."
+          },
+          "weight": {
             "type": "object",
-            "description": "Opaque passthrough for thermodynamics."
+            "additionalProperties": false,
+            "required": [
+              "value"
+            ],
+            "properties": {
+              "value": {
+                "type": "number",
+                "description": "Member weight. Its interpretation and permitted range are defined by weightScheme and the semantic contract."
+              }
+            }
           }
-        },
-        "additionalProperties": false
+        }
       }
     }
   }
