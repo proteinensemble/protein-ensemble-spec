@@ -26,6 +26,30 @@
       "description": "Content identifier for the ensemble, in the form algorithm:hexdigest."
     },
     "weightScheme": {
+      "$ref": "#/$defs/WeightScheme"
+    },
+    "capabilitiesRequired": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true,
+      "description": "Capabilities a consumer must support to interpret this manifest."
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Non-normative metadata. Metadata fields have no PE core semantic meaning unless explicitly defined by the specification."
+    },
+    "members": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/$defs/Member"
+      }
+    }
+  },
+  "$defs": {
+    "WeightScheme": {
       "type": "object",
       "additionalProperties": false,
       "required": [
@@ -46,67 +70,57 @@
         }
       }
     },
-    "capabilitiesRequired": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "minLength": 1
-      },
-      "uniqueItems": true,
-      "description": "Capabilities a consumer must support to interpret this manifest."
-    },
-    "metadata": {
+    "Member": {
       "type": "object",
-      "description": "Non-normative metadata. Metadata fields have no PE core semantic meaning unless explicitly defined by the specification."
+      "additionalProperties": false,
+      "required": [
+        "structure",
+        "structureHash"
+      ],
+      "properties": {
+        "structure": {
+          "$ref": "#/$defs/Structure"
+        },
+        "structureHash": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]+:[A-Fa-f0-9]+$",
+          "description": "Content identifier for the referenced structural resource, in the form algorithm:hexdigest."
+        },
+        "weight": {
+          "$ref": "#/$defs/Weight"
+        }
+      }
     },
-    "members": {
+    "Structure": {
       "type": "object",
-      "additionalProperties": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "structure",
-          "structureHash"
-        ],
-        "properties": {
-          "structure": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "uri"
-            ],
-            "properties": {
-              "uri": {
-                "type": "string",
-                "format": "uri-reference",
-                "minLength": 1,
-                "description": "URI reference to the structural resource. Relative references are resolved relative to the manifest."
-              },
-              "modelIndex": {
-                "type": "integer",
-                "minimum": 0,
-                "description": "Zero-based model index within the referenced structural resource. When omitted, the referenced resource represents a single structural member."
-              }
-            }
-          },
-          "structureHash": {
-            "type": "string",
-            "pattern": "^[A-Za-z0-9_-]+:[A-Fa-f0-9]+$",
-            "description": "Content identifier for the referenced structural resource, in the form algorithm:hexdigest."
-          },
-          "weight": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": [
-              "value"
-            ],
-            "properties": {
-              "value": {
-                "type": "number",
-                "description": "Member weight. Its interpretation and permitted range are defined by weightScheme and the semantic contract."
-              }
-            }
-          }
+      "additionalProperties": false,
+      "required": [
+        "uri"
+      ],
+      "properties": {
+        "uri": {
+          "type": "string",
+          "format": "uri-reference",
+          "minLength": 1,
+          "description": "URI reference to the structural resource. Relative references are resolved relative to the manifest."
+        },
+        "modelIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Zero-based model index within the referenced structural resource. When omitted, the referenced resource represents a single structural member."
+        }
+      }
+    },
+    "Weight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "value"
+      ],
+      "properties": {
+        "value": {
+          "type": "number",
+          "description": "Member weight. Its interpretation and permitted range are defined by weightScheme and the semantic contract."
         }
       }
     }

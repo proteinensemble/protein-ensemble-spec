@@ -1,4 +1,4 @@
-# Protein Ensemble (PE) Manifest — Data Contract Reference [v0.1.0]
+# Protein Ensemble (PE) Manifest Data Contract Reference [v0.1.0]
 
 Plain-English companion to `manifest.schema.json`. This document defines the **Protein Ensemble manifest data contract and semantic requirements**.
 
